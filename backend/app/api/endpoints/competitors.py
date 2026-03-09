@@ -5,6 +5,12 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.crud.crud_competitor import competitor as crud_competitor
 from app.crud.crud_business import business as crud_business
+from app.crud.crud_strategy_insight import strategy_insight as crud_strategy_insight
+from app.crud.crud_raw_scraped_data import raw_scraped_data as crud_raw_scraped_data
+from app.crud.crud_cleaned_data import cleaned_data as crud_cleaned_data
+from app.schemas.strategy_insight import StrategyInsightResponse
+from app.schemas.raw_scraped_data import RawScrapedDataResponse
+from app.schemas.cleaned_data import CleanedDataResponse
 from app.models.user import User
 from app.schemas.competitor import (
     CompetitorCreate,
@@ -174,3 +180,53 @@ def trigger_scrape(
 
     task = scrape_competitor.delay(competitor_id)
     return {"task_id": task.id, "status": "queued"}
+
+
+# --- Insights Endpoint ---
+@router.get("/{competitor_id}/insights", response_model=List[StrategyInsightResponse])
+def get_strategy_insights(
+    *,
+    db: Session = Depends(deps.get_db),
+    competitor_id: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    comp = crud_competitor.get(db=db, id=competitor_id)
+    if not comp:
+        raise HTTPException(status_code=404, detail="Competitor not found")
+    biz = crud_business.get(db=db, id=comp.business_id)
+    if not biz or biz.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud_strategy_insight.get_by_competitor(db, competitor_id=competitor_id)
+
+# --- Raw Data Endpoint ---
+@router.get("/{competitor_id}/raw-data", response_model=List[RawScrapedDataResponse])
+def get_raw_scraped_data(
+    *,
+    db: Session = Depends(deps.get_db),
+    competitor_id: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    comp = crud_competitor.get(db=db, id=competitor_id)
+    if not comp:
+        raise HTTPException(status_code=404, detail="Competitor not found")
+    biz = crud_business.get(db=db, id=comp.business_id)
+    if not biz or biz.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud_raw_scraped_data.get_by_competitor(db, competitor_id=competitor_id)
+
+# --- Cleaned Data Endpoint ---
+@router.get("/{competitor_id}/cleaned-data", response_model=List[CleanedDataResponse])
+def get_cleaned_data(
+    *,
+    db: Session = Depends(deps.get_db),
+    competitor_id: int,
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    comp = crud_competitor.get(db=db, id=competitor_id)
+    if not comp:
+        raise HTTPException(status_code=404, detail="Competitor not found")
+    biz = crud_business.get(db=db, id=comp.business_id)
+    if not biz or biz.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return crud_cleaned_data.get_by_competitor(db, competitor_id=competitor_id)
+

@@ -60,23 +60,89 @@ def normalize_raw_data(raw_id: int) -> dict:
         if not raw:
             return {"error": "raw_not_found", "raw_id": raw_id}
 
-        # Simple placeholder normalization
+
+        # --- Real HTML parsing using BeautifulSoup ---
+        from bs4 import BeautifulSoup
+        html = raw.payload.get("text", "")
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Try to extract product name and price heuristically
+        product_name = None
+        price = None
+
+        # Try common product name selectors
+        for selector in ["h1.product-title", "h1", "title", ".product-title", ".product_name"]:
+            el = soup.select_one(selector)
+            if el and el.get_text(strip=True):
+                product_name = el.get_text(strip=True)
+                break
+
+        # Try common price selectors
+        for selector in [".price", ".product-price", "[class*=price]", "[id*=price]"]:
+            el = soup.select_one(selector)
+            if el and el.get_text(strip=True):
+                import re
+                price_text = el.get_text(strip=True)
+                match = re.search(r"[\$€₹£]?\s*([0-9]+(?:[.,][0-9]{2})?)", price_text)
+                if match:
+                    try:
+                        price = float(match.group(1).replace(",", "").replace(" ", ""))
+                    except Exception:
+                        price = None
+                break
+
         cleaned = {
             "competitor_id": raw.competitor_id,
             "url": raw.url,
-            "product_name": None,
-            "price": None,
+            "product_name": product_name,
+            "price": price,
             "metadata_json": {"source": "raw_html"},
             "scraped_at": raw.scraped_at,
         }
 
         from app.crud.crud_cleaned_data import cleaned_data as crud_cleaned
 
+        # Check for previous data to detect changes
+        from app.crud.crud_alert import alert as crud_alert
+        
+        # Get the most recent previous cleaned data for this competitor
+        previous_data = db.query(crud_cleaned.model).filter(
+            crud_cleaned.model.competitor_id == raw.competitor_id
+        ).order_by(crud_cleaned.model.scraped_at.desc()).first()
+        
         record = crud_cleaned.create(db, obj_in=cleaned)
+        
+        # --- Alert Detection Logic ---
+        if previous_data:
+            alerts_to_create = []
+            
+            # Check for price changes
+            if previous_data.price is not None and record.price is not None:
+                if abs(previous_data.price - record.price) > 0.01:  # Price changed
+                    price_change = record.price - previous_data.price
+                    direction = "increased" if price_change > 0 else "decreased"
+                    alerts_to_create.append({
+                        "competitor_id": record.competitor_id,
+                        "alert_type": "price_change",
+                        "message": f"Price {direction} from ${previous_data.price:.2f} to ${record.price:.2f} (change: ${price_change:+.2f})"
+                    })
+            
+            # Check for product name changes
+            if (previous_data.product_name and record.product_name and 
+                previous_data.product_name.strip() != record.product_name.strip()):
+                alerts_to_create.append({
+                    "competitor_id": record.competitor_id,
+                    "alert_type": "product_name_change",
+                    "message": f"Product name changed from '{previous_data.product_name}' to '{record.product_name}'"
+                })
+            
+            # Create alerts in database
+            for alert_data in alerts_to_create:
+                crud_alert.create(db, obj_in=alert_data)
 
         # Trigger insight generation for the newly cleaned record
         generate_insight.delay(record.id)
-        return {"cleaned_id": record.id}
+        return {"cleaned_id": record.id, "alerts_created": len(alerts_to_create) if previous_data else 0}
     finally:
         db.close()
 
