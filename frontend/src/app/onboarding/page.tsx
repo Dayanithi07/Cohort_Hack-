@@ -461,7 +461,7 @@ export default function OnboardingPage() {
     <div className={styles.page}>
       <header className={styles.topbar}>
         <div>
-          <h1>Competitor Intelligence Workspace</h1>
+          <h1>INTELOPS Workspace</h1>
           <p>Onboard your business, discover competitors, scrape data, and track changes.</p>
         </div>
         <button type="button" className={styles.ghostBtn} onClick={logout}>

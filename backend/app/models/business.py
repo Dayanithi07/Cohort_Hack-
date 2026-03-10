@@ -33,3 +33,4 @@ class Business(Base):
 
     owner = relationship("User", back_populates="businesses")
     competitors = relationship("Competitor", back_populates="business")
+    products = relationship("UserProduct", back_populates="business")

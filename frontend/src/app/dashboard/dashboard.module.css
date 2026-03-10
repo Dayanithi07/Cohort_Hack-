@@ -1072,3 +1072,29 @@
   font-size: 15px;
   color: #111827;
 }
+
+/* Product Catalog Styles */
+.productCatalog {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.productThumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+}

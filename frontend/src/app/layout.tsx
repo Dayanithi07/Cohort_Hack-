@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Competitor Intelligence Tracker",
+  title: "INTELOPS - Intelligence Operations Platform",
   description: "Monitor competitor activity, track changes, and get AI-powered insights — all in one place.",
 };
 

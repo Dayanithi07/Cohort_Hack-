@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../dashboard.module.css";
+import ProductCatalog from "./components/ProductCatalog";
 
 type Business = {
   id: number;
@@ -381,6 +382,10 @@ export default function SettingsPage() {
           </form>
         ) : null}
       </section>
+
+      {selectedBusinessId ? (
+        <ProductCatalog businessId={selectedBusinessId} authFetch={authFetch} />
+      ) : null}
     </div>
   );
 }

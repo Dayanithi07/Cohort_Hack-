@@ -7,3 +7,4 @@ from app.models.raw_scraped_data import RawScrapedData
 from app.models.cleaned_data import CleanedData
 from app.models.alert import Alert
 from app.models.strategy_insight import StrategyInsight
+from app.models.user_product import UserProduct

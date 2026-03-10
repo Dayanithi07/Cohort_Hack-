@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -12,5 +13,6 @@ class Competitor(Base):
     discovery_method = Column(String, default="manual")
     priority_level = Column(String, default="medium")
     business_id = Column(Integer, ForeignKey("businesses.id"))
+    last_scraped_at = Column(DateTime, nullable=True)
 
     business = relationship("Business", back_populates="competitors")

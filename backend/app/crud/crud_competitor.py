@@ -7,7 +7,14 @@ from app.schemas.competitor import CompetitorCreate, CompetitorUpdate
 
 class CRUDCompetitor(CRUDBase[Competitor, CompetitorCreate, CompetitorUpdate]):
     def get_by_business(self, db: Session, *, business_id: int) -> List[Competitor]:
-        return db.query(Competitor).filter(Competitor.business_id == business_id).all()
+        return db.query(Competitor).filter(Competitor.business_id == business_id).distinct().all()
+    
+    def exists_by_domain(self, db: Session, *, business_id: int, domain_url: str) -> bool:
+        """Check if competitor with same domain already exists for this business"""
+        return db.query(Competitor).filter(
+            Competitor.business_id == business_id,
+            Competitor.domain_url == domain_url
+        ).first() is not None
 
     def create_with_business(
         self, db: Session, *, obj_in: CompetitorCreate

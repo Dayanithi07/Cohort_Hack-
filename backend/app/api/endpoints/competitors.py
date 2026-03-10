@@ -1,5 +1,6 @@
 from typing import Any, List
 from urllib.parse import parse_qs, unquote, urlparse
+import re
 
 import httpx
 from bs4 import BeautifulSoup
@@ -167,6 +168,31 @@ def create_competitor(
     biz = crud_business.get(db=db, id=competitor_in.business_id)
     if not biz or biz.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    # Validate URL format
+    url = competitor_in.domain_url
+    
+    # Check if it's a homepage URL (not allowed for e-commerce)
+    homepage_patterns = [
+        r'^https?://[^/]+/?$',  # Just domain
+        r'^https?://[^/]+/[?]?$',  # Domain with trailing slash/query
+        r'^https?://www\.amazon\.[^/]+/?$',  # Amazon homepage
+        r'^https?://www\.flipkart\.com/?$',  # Flipkart homepage
+    ]
+    
+    if any(re.match(pattern, url) for pattern in homepage_patterns):
+        raise HTTPException(
+            status_code=400,
+            detail="Homepage URLs are not supported. Please use a product page or search URL. Examples: amazon.com/dp/ASIN, flipkart.com/product-name/p/ID, or search URLs like amazon.com/s?k=laptop"
+        )
+    
+    # Check for duplicate
+    if crud_competitor.exists_by_domain(db, business_id=competitor_in.business_id, domain_url=url):
+        raise HTTPException(
+            status_code=400,
+            detail="Competitor with this URL already exists for your business"
+        )
+    
     comp = crud_competitor.create_with_business(db=db, obj_in=competitor_in)
     return comp
 

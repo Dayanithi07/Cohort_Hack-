@@ -90,21 +90,25 @@ export default function HomePage() {
         {/* Left: Hero */}
         <div className={styles.hero}>
           <div className={styles.logoMark}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path d="M16 2L28 8V24L16 30L4 24V8L16 2Z" fill="url(#grad)" />
-              <path d="M16 10L22 14V20L16 24L10 20V14L16 10Z" fill="rgb(10,10,15)" fillOpacity="0.8" />
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="18" fill="url(#grad)" />
+              <path d="M20 8L20 32M12 20L28 20" stroke="#0A0A0F" strokeWidth="2.5" strokeLinecap="round" />
+              <circle cx="20" cy="12" r="2.5" fill="#10B981" />
+              <circle cx="20" cy="28" r="2.5" fill="#10B981" />
+              <circle cx="14" cy="20" r="2.5" fill="#10B981" />
+              <circle cx="26" cy="20" r="2.5" fill="#10B981" />
               <defs>
-                <linearGradient id="grad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#6c63ff" />
-                  <stop offset="1" stopColor="#a78bfa" />
+                <linearGradient id="grad" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#4F46E5" />
+                  <stop offset="1" stopColor="#6366F1" />
                 </linearGradient>
               </defs>
             </svg>
-            <span className={styles.logoText}>CIT</span>
+            <span className={styles.logoText}>INTELOPS</span>
           </div>
           <h1 className={styles.heroHeading}>
-            Competitor<br />
-            <span className={styles.heroAccent}>Intelligence</span><br />
+            Intelligence<br />
+            <span className={styles.heroAccent}>Operations</span><br />
             Platform
           </h1>
           <p className={styles.heroDesc}>

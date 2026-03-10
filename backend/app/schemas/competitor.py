@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -8,6 +9,7 @@ class CompetitorBase(BaseModel):
     status: Optional[str] = "active"
     discovery_method: Optional[str] = "manual"
     priority_level: Optional[str] = "medium"
+    last_scraped_at: Optional[datetime] = None
 
 
 class CompetitorCreate(CompetitorBase):

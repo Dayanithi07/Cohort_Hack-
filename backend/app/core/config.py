@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Competitor Intelligence Tracker"
+    PROJECT_NAME: str = "INTELOPS - Intelligence Operations Platform"
     API_V1_STR: str = "/api/v1"
 
     SECRET_KEY: str = "changeme-please-generate-a-secure-random-key-here"

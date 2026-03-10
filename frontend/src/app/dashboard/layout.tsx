@@ -89,10 +89,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className={styles.dashboardRoot}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarBrand}>
-          <span className={styles.brandIcon}>CI</span>
+          <span className={styles.brandIcon}>IO</span>
           <div>
             <h2>Command Center</h2>
-            <p>Competitor Intelligence</p>
+            <p>INTELOPS</p>
           </div>
         </div>
 
