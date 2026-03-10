@@ -1,10 +1,13 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class Competitor(Base):
     __tablename__ = "competitors"
+    __table_args__ = (
+        UniqueConstraint('business_id', 'domain_url', name='uq_competitor_business_domain'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
