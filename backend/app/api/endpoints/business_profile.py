@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api import deps
@@ -18,6 +18,13 @@ def create_business_profile(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Create the user's primary business profile."""
+    existing = crud_business.get_by_owner(db, owner_id=current_user.id)
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Onboarding already completed for this user.",
+        )
+
     biz = crud_business.create_with_owner(
         db=db, obj_in=business_in, owner_id=current_user.id
     )

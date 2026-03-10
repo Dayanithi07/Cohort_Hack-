@@ -34,6 +34,13 @@ def create_business(
     """
     Create new business.
     """
+    existing = crud_business.get_by_owner(db, owner_id=current_user.id)
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Onboarding already completed for this user.",
+        )
+
     biz = crud_business.create_with_owner(
         db=db, obj_in=business_in, owner_id=current_user.id
     )

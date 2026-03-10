@@ -18,3 +18,6 @@ celerybeat-schedule
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Local runtime state
+.frontend-dev.pid

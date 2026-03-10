@@ -1,13 +1,49 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api/v1";
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [form, setForm] = useState({ email: "", password: "", full_name: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const getStoredToken = () => {
+    try {
+      return localStorage.getItem("token") || sessionStorage.getItem("token");
+    } catch {
+      return null;
+    }
+  };
+
+  const storeToken = (token: string) => {
+    try {
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
+    } catch {
+      // If storage is blocked, redirect still proceeds and user can re-auth.
+    }
+  };
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
+  const goToDashboard = () => {
+    router.replace("/dashboard");
+    window.setTimeout(() => {
+      if (window.location.pathname !== "/dashboard") {
+        window.location.assign("/dashboard");
+      }
+    }, 250);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,11 +55,11 @@ export default function HomePage() {
     setError("");
     try {
       const body = new URLSearchParams({ username: form.email, password: form.password });
-      const res = await fetch("http://127.0.0.1:8000/api/v1/auth/login", { method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
+      const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || "Login failed"); }
       const data = await res.json();
-      localStorage.setItem("token", data.access_token);
-      window.location.href = "/dashboard";
+      storeToken(data.access_token);
+      goToDashboard();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally { setLoading(false); }
@@ -34,10 +70,11 @@ export default function HomePage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/v1/users/", { method: "POST", body: JSON.stringify(form), headers: { "Content-Type": "application/json" } });
+      const res = await fetch(`${API_BASE}/auth/register`, { method: "POST", body: JSON.stringify(form), headers: { "Content-Type": "application/json" } });
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || "Signup failed"); }
-      setActiveTab("login");
-      setError("Account created! Please log in.");
+      const data = await res.json();
+      storeToken(data.access_token);
+      goToDashboard();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Signup failed");
     } finally { setLoading(false); }
